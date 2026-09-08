@@ -31,6 +31,8 @@ Un módulo de AzerothCore que simula el avance por las expansiones y sus tiers d
 - **Progresión de la Isla de Quel'Danas** — Las misiones diarias y facciones se desbloquean por fases, igual que en el lanzamiento original del parche 2.4.
 - **Compatibilidad con Playerbots** — Las cuentas de bots (identificadas por expresión regular) quedan completamente excluidas del control de progresión, de modo que pueden servir en cualquier tier con su nivel máximo configurado.
 - **Buscador de mazmorras (RDF) consciente de la progresión** — Ver [Restricción del Buscador de Mazmorras Aleatorio](#restricción-del-buscador-de-mazmorras-aleatorio-rdf) más abajo.
+- **Economía de entregas de Alterac Valley** — El campo de batalla con líneas de suministro de Vanilla, restaurado. Ver [Entregas de Alterac Valley](#entregas-de-alterac-valley) más abajo.
+- **Combates restaurados** — Attumen y Midnight en Karazhan (con la transición de montar), Magmus en las Profundidades de Roca Negra, y la emboscada de los Acechadores Espectrales "An Earnest Proposition" al entregar el Dungeon Set 2.
 - **Cadenas de progresión personalizadas** — Permite sustituir la progresión estándar basada en muertes de jefes por una lista de correspondencias criatura → tier definida por el operador (`CustomProgression`).
 
 Lista de cambios completa y referencia de tiers: [List of Changes](https://github.com/ZhengPeiRu21/mod-individual-progression/wiki/List-of-Changes) y [List of Progression Tiers](https://github.com/ZhengPeiRu21/mod-individual-progression/wiki/List-of-Progression-Tiers) (wiki original, en inglés).
@@ -121,6 +123,13 @@ La configuración completa y comentada está en `conf/individualProgression.conf
 | `IndividualProgression.MoltenCore.AqualEssenceCooldownReduction` | `0` | Minutos que se restan del tiempo de reutilización de 1 hora de la Quintaesencia Ácuea. `60` elimina el tiempo de reutilización por completo. |
 | `IndividualProgression.SerpentshrineCavern.RequireAllBosses` / `TheEye.RequireAllBosses` | `1` | Exige que todos los jefes anteriores estén muertos antes de que se desbloquee la consola de Vashj / la puerta de Kael. |
 | `IndividualProgression.FishingFix` | `1` | Restaura los requisitos de progresión por zona de la habilidad de pesca anteriores al 3.1. |
+| `IndividualProgression.VanillaHunterPets` | `0` | Exige domar bestias concretas para aprender los encantamientos y rangos de mascota, como en Vanilla/TBC. **Desactivado e inutilizable en este fork** — ver [Características no incorporadas](#características-no-incorporadas). |
+| `IndividualProgression.WarlockDemonTrainers` | `0` | Exige comprar grimorios para los encantamientos de demonio, como en Vanilla/TBC. **Desactivado e inutilizable en este fork** — ver [Características no incorporadas](#características-no-incorporadas). |
+| `IndividualProgression.AV.ScrapsSeasoned` / `ScrapsVeteran` / `ScrapsChampion` | `25` / `50` / `75` | Entregas de Chatarra de Armadura (20 por entrega) necesarias para que los defensores de los cementerios suban al siguiente grado. El proyecto original sugiere `12` / `24` / `36` para poblaciones pequeñas. |
+| `IndividualProgression.AV.BossPointsRequired` | `200` | Puntos de entrega necesarios para invocar a Ivus el Señor del Bosque / Lokholar el Señor del Hielo. Una entrega de 5 objetos son 5 puntos, una entrega simple es 1. El proyecto original sugiere `100`. |
+| `IndividualProgression.AV.AirStrikeTurnIns` | `50` | Entregas de Llamada Aérea por flota y por partida antes de que ese Comandante de Ala reparta su baliza de ataque aéreo. Quien la recibe debe ser Honorado con el Clan Frostwolf / la Guardia Stormpike. |
+| `IndividualProgression.AV.StablesTurnIns` | `10` | Entregas de Establos Vacíos y Arneses de Carnero necesarias para que salga la caballería. |
+| `IndividualProgression.AV.GossipExactNumbers` | `0` | La opción de conversa sobre suministros de Smith Regzar / Murgot Deepforge responde con una estimación. Ponlo a `1` para ver el número exacto de entregas, útil mientras calibras los umbrales. |
 | `IndividualProgression.SimpleConfigOverride` | `1` | Establece automáticamente `EnablePlayerSettings`, `DBC.EnforceItemAttributes` y el tiempo de aguante bajo el agua al arrancar. Desactívalo solo si vas a configurar estos valores tú mismo en `worldserver.conf`. |
 | `IndividualProgression.DisableQuestMarkers` | `1` | Desactiva los marcadores y destellos de objetos de misión (añadidos en el parche 2.3), para una experiencia de búsqueda de misiones más fiel a Vanilla. |
 | `IndividualProgression.DisableRDF` | `0` | Ver [Restricción del Buscador de Mazmorras Aleatorio](#restricción-del-buscador-de-mazmorras-aleatorio-rdf). |
@@ -149,6 +158,37 @@ La configuración completa y comentada está en `conf/individualProgression.conf
 | `IndividualProgression.EnableSetRepCommand` | `0` | Habilita `.ip setrep`, que permite copiar la reputación de un personaje de la cuenta a otro. |
 | `IndividualProgression.LimitedSetRepCommand` | `1` | Exige que el personaje destino ya sea neutral/amistoso/honorado con una facción (según la facción) antes de que `.ip setrep` pueda aumentarla más — evita multiplicar la reputación mediante entregas repetidas de la misma misión. |
 | `IndividualProgression.sharedFactionIdsRegex` | ver `.conf.dist` | IDs de facción admitidos para compartir reputación con `.ip setrep`. |
+
+---
+
+## Entregas de Alterac Valley
+
+El Alterac Valley de Vanilla era una guerra de desgaste con línea de suministro, no una carrera de 20 minutos hacia el general enemigo. El parche 2.3 y las revisiones del 3.x se llevaron casi todo por delante. Esto lo restaura, y todo funciona desde la base de datos de mundo y los scripts del módulo: sin cambios en el core y sin parche de cliente.
+
+**Chatarra de armadura → mejores defensores.** Los cadáveres sueltan Chatarra de Armadura (Botín Enemigo en la Horda). Se entrega de 20 en 20 a Smith Regzar (Horda) o Murgot Deepforge (Alianza). Cuando tu bando acumula suficiente, todos los defensores de cementerios y torres suben de grado: Curtido → Veterano → Campeón, cada uno con más vida y más daño.
+
+**Cristales y sangre → el jefe elemental.** La Alianza entrega Grupos de Cristales para invocar a Ivus el Señor del Bosque; la Horda entrega Sangre de Soldado Stormpike para invocar a Lokholar el Señor del Hielo. Cada bando tiene una entrega de 5 unidades que vale 5 puntos y una entrega simple que vale 1.
+
+**Llamada Aérea → ataques aéreos.** Seis Comandantes de Ala, tres por bando (Guse, Jeztor y Mulverick en la Horda; Ichman, Slidore y Vipore en la Alianza), cada uno con su propia misión de entrega contabilizada por flota. Cuando una flota acumula suficiente, su comandante reparte una baliza dirigida a un punto fijo: el cementerio de Snowfall, el cráter este o el cráter oeste. Para recibirla hay que ser Honorado con el Clan Frostwolf o la Guardia Stormpike.
+
+**Establos y arneses → caballería.** Entregas Bozales de Frostwolf o Collares de Stormpike al encargado de los establos y el Comandante de Caballería sale con una carga de lobos Frostwolf o carneros de Alterac.
+
+**Las minas y las cuevas.** Irondeep y Coldtooth se reconstruyen enteras: troggs, chamanes, capataces, guardias, mineros, sus jefes (Morloch, Keetar, Aggi Rumblestomp, Masha Swiftcut), patrullas y formaciones, junto a los gnolls Wildpaw, las arpías Snowblind y el Yeti de Alterac. Controlar una mina aporta recursos a tu bando, que es la otra mitad de la economía del AV.
+
+Smith Regzar y Murgot Deepforge ganan además una opción de conversa que informa de cómo va el esfuerzo de suministro. Por defecto responde con una estimación; con `AV.GossipExactNumbers = 1` da el número exacto.
+
+Ten en cuenta que todos los valores por defecto están calibrados para 40 contra 40 con jugadores reales. En un reino pequeño o con bots, baja los umbrales desde el primer día o la partida terminará antes de que se mejore nada.
+
+---
+
+## Características no incorporadas
+
+Hay dos características del proyecto original deliberadamente ausentes de este fork, porque no pueden funcionar sin repartir un cliente modificado:
+
+- **Mascotas de cazador a la Vanilla** (`hunter_pet_trainers.sql`) registra unos 76 encantamientos de mascota que no existen en el cliente 3.3.5 — rangos de Zarpa y Mordisco, Carga, Carrera, rangos de Picado y otros que los propios comentarios del proyecto original marcan como *"don't exist in wotlk"*.
+- **Grimorios de brujo** (`warlock_pet_trainers.sql`) hace lo mismo con unos 83 encantamientos de demonio.
+
+Ambos necesitan el MPQ opcional `patch-V` instalado en la máquina de cada jugador para poder dibujar esos encantamientos. Los archivos SQL no se incluyen aquí y tanto `VanillaHunterPets` como `WarlockDemonTrainers` valen `0` por defecto. El código de soporte sigue presente y queda inerte: ambos puntos de entrada retornan de inmediato cuando su opción está desactivada, y las comprobaciones de encantamientos de mascota solo actúan sobre el rango de IDs 600000-700000, que ningún personaje puede tener sin esos SQL. Si algún día repartes `patch-V`, coge los dos archivos del proyecto original y pon las opciones a `1`.
 
 ---
 
@@ -208,6 +248,7 @@ Todos los comandos están bajo `.ip` y requieren nivel de seguridad de GM (`SEC_
 * cMangos por los datos de TBC
 * Sogladev por los scripts y datos de Naxx 40
 * Módulo original: [ZhengPeiRu21/mod-individual-progression](https://github.com/ZhengPeiRu21/mod-individual-progression)
+* [Grimfeather/mod-individual-progression](https://github.com/Grimfeather/mod-individual-progression) por el sistema de entregas de Alterac Valley, los combates de Attumen/Midnight y Magmus, y muchas correcciones de mundo incorporadas aquí
 
 ---
 

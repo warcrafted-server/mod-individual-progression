@@ -31,6 +31,8 @@ An AzerothCore module that simulates progress through expansions and expansion t
 - **Isle of Quel'Danas progression** — Dailies and factions unlock in phases matching the original patch 2.4 rollout.
 - **Playerbots support** — Bot accounts (matched by regex) are excluded from progression gating entirely, so they can serve any tier at their configured max level.
 - **Progression-aware RDF (Dungeon Finder)** — See [Random Dungeon Finder gating](#random-dungeon-finder-gating) below.
+- **Alterac Valley turn-in economy** — The Vanilla supply-line battleground, restored. See [Alterac Valley turn-ins](#alterac-valley-turn-ins) below.
+- **Restored encounters** — Attumen and Midnight in Karazhan (with the mount-up transition), Magmus in Blackrock Depths, and the "An Earnest Proposition" Spectral Stalker ambush on the Dungeon Set 2 turn-in.
 - **Custom progression chains** — Optionally replace the default boss-kill progression with a list of custom creature-to-tier mappings (`CustomProgression`).
 
 Full changelog and tier reference: [List of Changes](https://github.com/ZhengPeiRu21/mod-individual-progression/wiki/List-of-Changes) and [List of Progression Tiers](https://github.com/ZhengPeiRu21/mod-individual-progression/wiki/List-of-Progression-Tiers) (upstream wiki).
@@ -121,6 +123,13 @@ The full annotated config lives in `conf/individualProgression.conf.dist`. Key o
 | `IndividualProgression.MoltenCore.AqualEssenceCooldownReduction` | `0` | Minutes to shave off the 1-hour Aqual Quintessence cooldown. `60` removes the cooldown entirely. |
 | `IndividualProgression.SerpentshrineCavern.RequireAllBosses` / `TheEye.RequireAllBosses` | `1` | Require all prior bosses dead before Vashj's console / Kael's door unlocks. |
 | `IndividualProgression.FishingFix` | `1` | Restore pre-3.1 fishing skill zone-progression requirements. |
+| `IndividualProgression.VanillaHunterPets` | `0` | Require taming specific beasts to learn pet spells/ranks, as in Vanilla/TBC. **Disabled and unusable in this fork** — see [Features not carried over](#features-not-carried-over). |
+| `IndividualProgression.WarlockDemonTrainers` | `0` | Require buying grimoires for demon spells, as in Vanilla/TBC. **Disabled and unusable in this fork** — see [Features not carried over](#features-not-carried-over). |
+| `IndividualProgression.AV.ScrapsSeasoned` / `ScrapsVeteran` / `ScrapsChampion` | `25` / `50` / `75` | Armor Scrap turn-ins (20 scraps each) needed before graveyard defenders upgrade to the next tier. Upstream suggests `12` / `24` / `36` for smaller populations. |
+| `IndividualProgression.AV.BossPointsRequired` | `200` | Turn-in points needed to summon Ivus the Forest Lord / Lokholar the Ice Lord. A 5-item turn-in is 5 points, a single turn-in is 1. Upstream suggests `100`. |
+| `IndividualProgression.AV.AirStrikeTurnIns` | `50` | Call of Air turn-ins per fleet, per match, before that Wing Commander hands out his air strike beacon. The receiving player must be Honored with Frostwolf Clan / Stormpike Guard. |
+| `IndividualProgression.AV.StablesTurnIns` | `10` | Empty Stables and Ram Harness turn-ins required to send the cavalry out. |
+| `IndividualProgression.AV.GossipExactNumbers` | `0` | The supplies gossip on Smith Regzar / Murgot Deepforge answers with an estimate. Set to `1` to show the exact turn-in count, useful while tuning the thresholds. |
 | `IndividualProgression.SimpleConfigOverride` | `1` | Automatically set `EnablePlayerSettings`, `DBC.EnforceItemAttributes`, and the water breath timer at startup. Disable only if you're setting these yourself in `worldserver.conf`. |
 | `IndividualProgression.DisableQuestMarkers` | `1` | Disable quest object markers/sparkles (added in patch 2.3), for a more Vanilla quest-hunting experience. |
 | `IndividualProgression.DisableRDF` | `0` | See [Random Dungeon Finder gating](#random-dungeon-finder-gating). |
@@ -149,6 +158,37 @@ The full annotated config lives in `conf/individualProgression.conf.dist`. Key o
 | `IndividualProgression.EnableSetRepCommand` | `0` | Enable `.ip setrep`, letting a player copy an account character's reputation to another. |
 | `IndividualProgression.LimitedSetRepCommand` | `1` | Require the target character to already be neutral/friendly/honored with a faction (depending on faction) before `.ip setrep` can raise it further — prevents multiplying reputation via repeated quest turn-ins. |
 | `IndividualProgression.sharedFactionIdsRegex` | see `.conf.dist` | Faction IDs eligible for `.ip setrep` sharing. |
+
+---
+
+## Alterac Valley Turn-Ins
+
+Vanilla Alterac Valley was a war of attrition with a supply line, not a 20-minute race to the enemy general. Patch 2.3 and the 3.x revisions stripped most of that out. This restores it, and all of it is driven from the world database and module scripts — no core changes, no client patch.
+
+**Armor Scraps → better defenders.** Corpses drop Armor Scraps (Enemy Booty for the Horde). Turn them in 20 at a time to Smith Regzar (Horde) or Murgot Deepforge (Alliance). Once your side has banked enough, every graveyard and tower defender upgrades a tier: Seasoned → Veteran → Champion, each with more health and damage.
+
+**Crystals and blood → the elemental boss.** The Alliance turns in Crystal Clusters to summon Ivus the Forest Lord; the Horde turns in Stormpike Soldier's Blood for Lokholar the Ice Lord. Each faction has a 5-item turn-in worth 5 points and a single turn-in worth 1.
+
+**Call of Air → air strikes.** Six Wing Commanders, three per side (Guse, Jeztor, Mulverick for the Horde; Ichman, Slidore, Vipore for the Alliance), each with their own turn-in quest counted per fleet. When a fleet banks enough, its commander hands out a beacon targeting a fixed location: Snowfall Graveyard, the east crater, or the west crater. Receiving one requires Honored with Frostwolf Clan or Stormpike Guard.
+
+**Stables and harnesses → cavalry.** Turn Frostwolf Muzzles or Stormpike Collars in to the stable master and the Cavalry Commander rides out with a charge of Frostwolf wolves or Alterac rams.
+
+**The mines and the caves.** Irondeep and Coldtooth are rebuilt in full — troggs, shamans, foremen, guards, miners, their bosses (Morloch, Keetar, Aggi Rumblestomp, Masha Swiftcut), patrols and formations — along with the Wildpaw gnolls, Snowblind harpies and the Alterac Yeti. Holding a mine feeds resources to your side, which is the other half of the AV economy.
+
+Smith Regzar and Murgot Deepforge also gain a gossip option reporting how the supply effort is going. By default the answer is an estimate; `AV.GossipExactNumbers = 1` gives the precise count.
+
+Note that every default here is calibrated for 40-vs-40 with real players. On a small or bot-driven realm, lower the thresholds from day one or a match will end before anything upgrades.
+
+---
+
+## Features Not Carried Over
+
+Two upstream features are deliberately absent from this fork because they cannot work without shipping a modified client:
+
+- **Vanilla hunter pet training** (`hunter_pet_trainers.sql`) registers roughly 76 pet spells that do not exist in the 3.3.5 client — Claw and Bite ranks, Charge, Dash, Dive ranks, and others upstream's own comments mark as *"don't exist in wotlk"*.
+- **Warlock grimoires** (`warlock_pet_trainers.sql`) does the same with roughly 83 demon spells.
+
+Both need the optional `patch-V` client MPQ installed on every player's machine to render those spells. The SQL files are not shipped here and `VanillaHunterPets` / `WarlockDemonTrainers` both default to `0`. The supporting code is still present and inert: both entry points return immediately when their option is off, and the pet spell checks only ever act on the 600000-700000 ID range, which no character can hold without those SQL files. If you do distribute `patch-V`, take the two SQL files from upstream and flip the options to `1`.
 
 ---
 
@@ -208,6 +248,7 @@ All commands are under `.ip` and require GM security level (`SEC_GAMEMASTER`).
 * cMangos for TBC game data
 * Sogladev for Naxx 40 scripts and data
 * Original module: [ZhengPeiRu21/mod-individual-progression](https://github.com/ZhengPeiRu21/mod-individual-progression)
+* [Grimfeather/mod-individual-progression](https://github.com/Grimfeather/mod-individual-progression) for the Alterac Valley turn-in system, the Attumen/Midnight and Magmus encounters, and many world fixes carried over here
 
 ---
 
