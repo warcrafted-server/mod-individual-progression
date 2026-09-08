@@ -198,10 +198,12 @@ IndividualProgression.DisableQuestMarkers = 1
 # IndividualProgression.DisableRDF
 #
 #        Description: Enable or disable the Random Dungeon Finder feature within the context of Individual Progression.
+#                     While disabled, the finder unlocks automatically once a character reaches WotLK progression
+#                     (PROGRESSION_TBC_TIER_5, tier 13 - Naxxramas/EoE/OS), matching launch-era client behavior.
 #                     Queuing for specific dungeons and Holiday Events will still be possible. (Use DungeonFinder.OptionsMask in worldserver.conf to completely disable the LFG tool.)
 #
 #        Default:     0 - RDF Enabled
-#                     1 - RDF Disabled
+#                     1 - RDF Disabled until WotLK progression is reached
 #
 IndividualProgression.DisableRDF = 0
 
