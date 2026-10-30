@@ -47,3 +47,9 @@ local.properties
 .loadpath
 .project
 .cproject
+
+#
+# AI tooling (never published)
+#
+CLAUDE.md
+.claude/
